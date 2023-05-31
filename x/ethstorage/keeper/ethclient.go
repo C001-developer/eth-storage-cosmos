@@ -20,5 +20,8 @@ func (k *Keeper) FetchStorage(ctx sdk.Context, address string, blockNumber, slot
 		}
 		return "", false
 	}
+	if (common.BytesToHash(res) == common.Hash{}) {
+		return "", false
+	}
 	return common.BytesToHash(res).String(), false
 }
