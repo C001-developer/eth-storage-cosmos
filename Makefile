@@ -13,3 +13,16 @@ lint:
 test:
 	go test ./... --timeout=10m
 .PHONY: test
+
+# Build, Run
+build:
+	go build -o simulate/ ./cmd/eth-storaged/
+.PHONY: build
+
+init-chain:
+	./scripts/init-chain.sh
+
+run-chain:
+	./simulate/eth-storaged start --home ./simulate
+
+.PHONY: init-chain run-chain

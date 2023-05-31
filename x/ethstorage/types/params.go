@@ -20,7 +20,7 @@ func NewParams() Params {
 			"0xB753548F6E010e7e680BA186F9Ca1BdAB2E90cf2", // Uniswap Proxy Admin
 		},
 		FromBlock: 17380596,
-		MaxCount:  10,
+		MaxCount:  2,
 	}
 }
 

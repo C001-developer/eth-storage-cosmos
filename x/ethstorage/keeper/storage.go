@@ -71,9 +71,22 @@ func (k Keeper) GetLastCount(ctx sdk.Context, address string) (blockNumber, slot
 // GetStorage returns a storage from
 func (k Keeper) GetStorage(ctx sdk.Context, address string, blockNumber, slot uint64) (storage *types.Storage, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.StorageKey))
+	fBlockNumber, fSlot := k.GetFinalizedCount(ctx, address)
 	if blockNumber == 0 { // Get the last finalized block
-		blockNumber, _ = k.GetFinalizedCount(ctx, address)
+		if slot <= fSlot {
+			blockNumber = fBlockNumber
+		} else {
+			blockNumber = fBlockNumber - 1
+		}
+	} else {
+		if blockNumber > fBlockNumber {
+			return nil, false
+		}
+		if blockNumber == fBlockNumber && slot > fSlot {
+			return nil, false
+		}
 	}
+
 	key := GetStorageKey(address, blockNumber, slot)
 	bz := store.Get(key)
 	if bz == nil {

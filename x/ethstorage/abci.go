@@ -15,13 +15,13 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		blockNumber, slot := k.GetLastCount(ctx, address)
 		if blockNumber != 0 {
 			k.SetFinalizedCount(ctx, address, blockNumber, slot)
+			slot += 1 // to get the next slot
 		} else {
 			blockNumber = params.FromBlock
 			slot = 0
 		}
 		// fetch the storage slot from the ethereum blockchain
 		for count := params.MaxCount; count > 0; count-- {
-			slot++
 			value, over := k.FetchStorage(ctx, address, blockNumber, slot)
 			if over {
 				break
@@ -38,6 +38,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 				Slot:    slot,
 				Value:   value,
 			})
+			slot++
 		}
 	}
 }
