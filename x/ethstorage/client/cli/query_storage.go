@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"errors"
 	"strconv"
 
 	"eth-storage/x/ethstorage/types"
@@ -14,14 +13,10 @@ import (
 
 func CmdShowStorage() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-storage [id]",
+		Use:   "show-storage [address] [slot] [block_number]",
 		Short: "shows a storage",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.RangeArgs(2, 3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 2 {
-				return errors.New("not enough arguments")
-			}
-
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)

@@ -43,7 +43,7 @@ func (msg *MsgCreateStorage) GetSignBytes() []byte {
 func (msg *MsgCreateStorage) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err) //nolint:staticcheck
 	}
 	return nil
 }
@@ -81,7 +81,7 @@ func (msg *MsgUpdateStorage) GetSignBytes() []byte {
 func (msg *MsgUpdateStorage) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err) //nolint:staticcheck
 	}
 	return nil
 }
@@ -118,7 +118,7 @@ func (msg *MsgDeleteStorage) GetSignBytes() []byte {
 func (msg *MsgDeleteStorage) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err) //nolint:staticcheck
 	}
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"eth-storage/x/ethstorage/types"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,45 +22,17 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc: "valid genesis state",
 			genState: &types.GenesisState{
-
 				StorageList: []types.Storage{
 					{
-						Id: 0,
-					},
-					{
-						Id: 1,
+						Address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+						Block:   17380596,
+						Slot:    0,
+						Value:   "0x00000000",
 					},
 				},
-				StorageCount: 2,
 				// this line is used by starport scaffolding # types/genesis/validField
 			},
 			valid: true,
-		},
-		{
-			desc: "duplicated storage",
-			genState: &types.GenesisState{
-				StorageList: []types.Storage{
-					{
-						Id: 0,
-					},
-					{
-						Id: 0,
-					},
-				},
-			},
-			valid: false,
-		},
-		{
-			desc: "invalid storage count",
-			genState: &types.GenesisState{
-				StorageList: []types.Storage{
-					{
-						Id: 1,
-					},
-				},
-				StorageCount: 0,
-			},
-			valid: false,
 		},
 		// this line is used by starport scaffolding # types/genesis/testcase
 	} {

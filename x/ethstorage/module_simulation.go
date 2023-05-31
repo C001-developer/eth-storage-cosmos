@@ -22,22 +22,6 @@ var (
 	_ = baseapp.Paramspace
 )
 
-const (
-	opWeightMsgCreateStorage = "op_weight_msg_storage"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgCreateStorage int = 100
-
-	opWeightMsgUpdateStorage = "op_weight_msg_storage"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgUpdateStorage int = 100
-
-	opWeightMsgDeleteStorage = "op_weight_msg_storage"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgDeleteStorage int = 100
-
-	// this line is used by starport scaffolding # simapp/module/const
-)
-
 // GenerateGenesisState creates a randomized GenState of the module
 func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	accs := make([]string, len(simState.Accounts))

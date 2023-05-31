@@ -17,13 +17,12 @@ func TestGenesis(t *testing.T) {
 
 		StorageList: []types.Storage{
 			{
-				Id: 0,
-			},
-			{
-				Id: 1,
+				Address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+				Block:   17380596,
+				Slot:    0,
+				Value:   "0x00000000",
 			},
 		},
-		StorageCount: 2,
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
@@ -36,6 +35,5 @@ func TestGenesis(t *testing.T) {
 	nullify.Fill(got)
 
 	require.ElementsMatch(t, genesisState.StorageList, got.StorageList)
-	require.Equal(t, genesisState.StorageCount, got.StorageCount)
 	// this line is used by starport scaffolding # genesis/test/assert
 }

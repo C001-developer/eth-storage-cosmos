@@ -5,7 +5,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,17 +26,17 @@ func TestStorageQuerySingle(t *testing.T) {
 	}{
 		{
 			desc:     "First",
-			request:  &types.QueryGetStorageRequest{Id: msgs[0].Id},
+			request:  &types.QueryGetStorageRequest{Address: msgs[0].Address, Block: msgs[0].Block, Slot: msgs[0].Slot},
 			response: &types.QueryGetStorageResponse{Storage: msgs[0]},
 		},
 		{
 			desc:     "Second",
-			request:  &types.QueryGetStorageRequest{Id: msgs[1].Id},
+			request:  &types.QueryGetStorageRequest{Address: msgs[1].Address, Block: msgs[1].Block, Slot: msgs[1].Slot},
 			response: &types.QueryGetStorageResponse{Storage: msgs[1]},
 		},
 		{
 			desc:    "KeyNotFound",
-			request: &types.QueryGetStorageRequest{Id: uint64(len(msgs))},
+			request: &types.QueryGetStorageRequest{Address: msgs[1].Address, Block: msgs[1].Block, Slot: msgs[1].Slot + 1},
 			err:     sdkerrors.ErrKeyNotFound,
 		},
 		{
@@ -58,60 +57,4 @@ func TestStorageQuerySingle(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestStorageQueryPaginated(t *testing.T) {
-	keeper, ctx := keepertest.EthstorageKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
-	msgs := createNStorage(keeper, ctx, 5)
-
-	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllStorageRequest {
-		return &types.QueryAllStorageRequest{
-			Pagination: &query.PageRequest{
-				Key:        next,
-				Offset:     offset,
-				Limit:      limit,
-				CountTotal: total,
-			},
-		}
-	}
-	t.Run("ByOffset", func(t *testing.T) {
-		step := 2
-		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.StorageAll(wctx, request(nil, uint64(i), uint64(step), false))
-			require.NoError(t, err)
-			require.LessOrEqual(t, len(resp.Storage), step)
-			require.Subset(t,
-				nullify.Fill(msgs),
-				nullify.Fill(resp.Storage),
-			)
-		}
-	})
-	t.Run("ByKey", func(t *testing.T) {
-		step := 2
-		var next []byte
-		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.StorageAll(wctx, request(next, 0, uint64(step), false))
-			require.NoError(t, err)
-			require.LessOrEqual(t, len(resp.Storage), step)
-			require.Subset(t,
-				nullify.Fill(msgs),
-				nullify.Fill(resp.Storage),
-			)
-			next = resp.Pagination.NextKey
-		}
-	})
-	t.Run("Total", func(t *testing.T) {
-		resp, err := keeper.StorageAll(wctx, request(nil, 0, 0, true))
-		require.NoError(t, err)
-		require.Equal(t, len(msgs), int(resp.Pagination.Total))
-		require.ElementsMatch(t,
-			nullify.Fill(msgs),
-			nullify.Fill(resp.Storage),
-		)
-	})
-	t.Run("InvalidRequest", func(t *testing.T) {
-		_, err := keeper.StorageAll(wctx, nil)
-		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
-	})
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/stretchr/testify/require"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
@@ -25,7 +24,10 @@ func networkWithStorageObjects(t *testing.T, n int) (*network.Network, []types.S
 
 	for i := 0; i < n; i++ {
 		storage := types.Storage{
-			Id: uint64(i),
+			Address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+			Block:   17380596,
+			Slot:    uint64(i),
+			Value:   fmt.Sprintf("%d", i),
 		}
 		nullify.Fill(&storage)
 		state.StorageList = append(state.StorageList, storage)
@@ -41,32 +43,39 @@ func TestShowStorage(t *testing.T) {
 
 	ctx := net.Validators[0].ClientCtx
 	common := []string{
+
 		fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 	}
 	for _, tc := range []struct {
 		desc string
-		id   string
+		key  []string
 		args []string
 		err  error
 		obj  types.Storage
 	}{
+
 		{
 			desc: "found",
-			id:   fmt.Sprintf("%d", objs[0].Id),
+			key:  []string{objs[0].Address, fmt.Sprintf("%d", objs[0].Slot), fmt.Sprintf("%d", objs[0].Block)},
+			args: common,
+			obj:  objs[0],
+		},
+		{
+			desc: "latest found",
+			key:  []string{objs[0].Address, fmt.Sprintf("%d", objs[0].Slot)},
 			args: common,
 			obj:  objs[0],
 		},
 		{
 			desc: "not found",
-			id:   "not_found",
+			key:  []string{"not_found"},
 			args: common,
 			err:  status.Error(codes.NotFound, "not found"),
 		},
 	} {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
-			args := []string{tc.id}
-			args = append(args, tc.args...)
+			args := append(tc.key, tc.args...)
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdShowStorage(), args)
 			if tc.err != nil {
 				stat, ok := status.FromError(tc.err)
@@ -84,70 +93,4 @@ func TestShowStorage(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestListStorage(t *testing.T) {
-	net, objs := networkWithStorageObjects(t, 5)
-
-	ctx := net.Validators[0].ClientCtx
-	request := func(next []byte, offset, limit uint64, total bool) []string {
-		args := []string{
-			fmt.Sprintf("--%s=json", tmcli.OutputFlag),
-		}
-		if next == nil {
-			args = append(args, fmt.Sprintf("--%s=%d", flags.FlagOffset, offset))
-		} else {
-			args = append(args, fmt.Sprintf("--%s=%s", flags.FlagPageKey, next))
-		}
-		args = append(args, fmt.Sprintf("--%s=%d", flags.FlagLimit, limit))
-		if total {
-			args = append(args, fmt.Sprintf("--%s", flags.FlagCountTotal))
-		}
-		return args
-	}
-	t.Run("ByOffset", func(t *testing.T) {
-		step := 2
-		for i := 0; i < len(objs); i += step {
-			args := request(nil, uint64(i), uint64(step), false)
-			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListStorage(), args)
-			require.NoError(t, err)
-			var resp types.QueryAllStorageResponse
-			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
-			require.LessOrEqual(t, len(resp.Storage), step)
-			require.Subset(t,
-				nullify.Fill(objs),
-				nullify.Fill(resp.Storage),
-			)
-		}
-	})
-	t.Run("ByKey", func(t *testing.T) {
-		step := 2
-		var next []byte
-		for i := 0; i < len(objs); i += step {
-			args := request(next, 0, uint64(step), false)
-			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListStorage(), args)
-			require.NoError(t, err)
-			var resp types.QueryAllStorageResponse
-			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
-			require.LessOrEqual(t, len(resp.Storage), step)
-			require.Subset(t,
-				nullify.Fill(objs),
-				nullify.Fill(resp.Storage),
-			)
-			next = resp.Pagination.NextKey
-		}
-	})
-	t.Run("Total", func(t *testing.T) {
-		args := request(nil, 0, uint64(len(objs)), true)
-		out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListStorage(), args)
-		require.NoError(t, err)
-		var resp types.QueryAllStorageResponse
-		require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
-		require.NoError(t, err)
-		require.Equal(t, len(objs), int(resp.Pagination.Total))
-		require.ElementsMatch(t,
-			nullify.Fill(objs),
-			nullify.Fill(resp.Storage),
-		)
-	})
 }

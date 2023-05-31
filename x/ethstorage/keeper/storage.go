@@ -2,12 +2,12 @@ package keeper
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 
 	"eth-storage/x/ethstorage/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // GetFinalizedCount get the last finalized slot
@@ -69,7 +69,7 @@ func (k Keeper) GetLastCount(ctx sdk.Context, address string) (blockNumber, slot
 }
 
 // GetStorage returns a storage from
-func (k Keeper) GetStorage(ctx sdk.Context, address string, blockNumber, slot uint64) (val string, found bool) {
+func (k Keeper) GetStorage(ctx sdk.Context, address string, blockNumber, slot uint64) (storage *types.Storage, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.StorageKey))
 	if blockNumber == 0 { // Get the last finalized block
 		blockNumber, _ = k.GetFinalizedCount(ctx, address)
@@ -77,9 +77,14 @@ func (k Keeper) GetStorage(ctx sdk.Context, address string, blockNumber, slot ui
 	key := GetStorageKey(address, blockNumber, slot)
 	bz := store.Get(key)
 	if bz == nil {
-		return val, false
+		return nil, false
 	}
-	return string(bz), true
+	return &types.Storage{
+		Address: address,
+		Block:   blockNumber,
+		Slot:    slot,
+		Value:   string(bz),
+	}, true
 }
 
 // GetAllStorage returns the list of all storage
@@ -106,11 +111,7 @@ func (k Keeper) GetAllStorage(ctx sdk.Context) (list []types.Storage) {
 
 // GetBytesFromAddress returns the byte representation of the address
 func GetBytesFromAddress(address string) []byte {
-	if len(address) >= 2 && address[:2] == "0x" {
-		address = address[2:]
-	}
-	h, _ := hex.DecodeString(address)
-	return h
+	return common.HexToAddress(address).Bytes()
 }
 
 // GetStorageIDBytes returns the byte representation of the storage key
@@ -127,11 +128,11 @@ func GetStorageKey(address string, blockNumber, slot uint64) []byte {
 
 // GetStorageFromBytes returns ID in uint64 format from a byte array
 func GetStorageFromBytes(bz []byte) (address string, blockNumber uint64, slot uint64) {
-	if bz == nil || len(bz) != 48 {
+	if bz == nil || len(bz) != 36 {
 		return
 	}
-	address = "0x" + hex.EncodeToString(bz[:32])
-	blockNumber = binary.BigEndian.Uint64(bz[32:40])
-	slot = binary.BigEndian.Uint64(bz[40:48])
+	address = common.BytesToAddress(bz[:20]).Hex()
+	blockNumber = binary.BigEndian.Uint64(bz[20:28])
+	slot = binary.BigEndian.Uint64(bz[28:36])
 	return
 }

@@ -22,10 +22,5 @@ func (k Keeper) Storage(goCtx context.Context, req *types.QueryGetStorageRequest
 		return nil, sdkerrors.ErrKeyNotFound
 	}
 
-	return &types.QueryGetStorageResponse{Storage: types.Storage{
-		Address: req.Address,
-		Block:   req.Block,
-		Slot:    req.Slot,
-		Value:   val,
-	}}, nil
+	return &types.QueryGetStorageResponse{Storage: *val}, nil
 }
