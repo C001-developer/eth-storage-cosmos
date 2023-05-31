@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ethstorage.ethstorage;
+
+import "gogoproto/gogo.proto";
+import "ethstorage/ethstorage/params.proto";
+import "ethstorage/ethstorage/storage.proto";
+
+option go_package = "eth-storage/x/ethstorage/types";
+
+// GenesisState defines the ethstorage module's genesis state.
+message GenesisState {
+           Params  params       = 1 [(gogoproto.nullable) = false];
+  repeated Storage storageList  = 2 [(gogoproto.nullable) = false];
+}
+

@@ -1,0 +1,11 @@
+syntax = "proto3";
+package ethstorage.ethstorage;
+
+option go_package = "eth-storage/x/ethstorage/types";
+
+message Storage {
+  string address = 1;
+  uint64 slot = 2;
+  uint64 block = 3;
+  string value = 4;
+}

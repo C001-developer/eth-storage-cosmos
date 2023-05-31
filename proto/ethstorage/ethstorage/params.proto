@@ -1,0 +1,14 @@
+syntax = "proto3";
+package ethstorage.ethstorage;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "eth-storage/x/ethstorage/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  repeated string addresses = 1;
+  uint64 from_block = 2;
+  uint32 max_count = 3;
+}
