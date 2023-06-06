@@ -31,7 +31,7 @@ make init-chain
 make run-chain
 ```
 
-## Cliend commands
+## Client commands
 ```bash
 # show-storage [address] [slot] [block] 
 ./simulate/eth-storaged query ethstorage show-storage 0xB753548F6E010e7e680BA186F9Ca1BdAB2E90cf2 0 17380596 --output json
